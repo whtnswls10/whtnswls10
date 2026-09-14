@@ -992,6 +992,8 @@ function initCircleActivitiesDB() {
   const openAddBtn = document.getElementById('btn-open-add-activity');
   const navQuickAddBtn = document.getElementById('nav-quick-add-btn');
   const resetFiltersBtn = document.getElementById('btn-reset-filters');
+  const syncSupabaseBtn = document.getElementById('btn-sync-supabase');
+  const supabaseStatusText = document.getElementById('supabase-status-text');
 
   // Modals
   const detailModal = document.getElementById('activity-detail-modal');
@@ -1468,8 +1470,85 @@ function initCircleActivitiesDB() {
       closeAddModal();
       renderActivities();
 
-      alert(`'${title}' 활동이 데이터베이스에 성공적으로 저장되었습니다!`);
+      // Async Sync to Supabase via Vercel Serverless Function
+      fetch('/api/activities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newActivity)
+      }).then(res => res.json()).then(resData => {
+        if (resData.success) {
+          alert(`🎉 '${title}' 활동이 Supabase 클라우드 DB 및 로컬스토리지에 성공적으로 저장되었습니다!`);
+          if (supabaseStatusText) supabaseStatusText.textContent = 'Supabase Cloud 저장 완료';
+        } else {
+          alert(`'${title}' 활동이 로컬스토리지에 저장되었습니다. (Supabase 안내: ${resData.message || 'Vercel 환경변수 연동 필요'})`);
+        }
+      }).catch(() => {
+        alert(`'${title}' 활동이 로컬 브라우저 데이터베이스에 안전하게 저장되었습니다!`);
+      });
     });
+  }
+
+  // 7. Supabase Bulk Sync Button Handler
+  if (syncSupabaseBtn) {
+    syncSupabaseBtn.addEventListener('click', async () => {
+      const allActivities = getAllActivities();
+      syncSupabaseBtn.disabled = true;
+      const originalHtml = syncSupabaseBtn.innerHTML;
+      syncSupabaseBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-emerald-400"></i><span>동기화 중...</span>`;
+      if (window.lucide) window.lucide.createIcons();
+
+      try {
+        const response = await fetch('/api/activities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(allActivities)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          alert(`🚀 [Supabase 클라우드 동기화 성공]\n총 ${allActivities.length}개의 원의 방정식 탐구 활동이 Supabase DB (circle_activities 테이블)에 안전하게 저장·업데이트되었습니다!`);
+          if (supabaseStatusText) supabaseStatusText.textContent = `Supabase 연동됨 (${allActivities.length}건)`;
+        } else {
+          alert(`[Supabase 연동 상태 안내]\n${result.message || 'Vercel 배포 환경에서 환경 변수(SUPABASE_URL, SUPABASE_ANON_KEY)를 확인해 주세요.'}`);
+        }
+      } catch (err) {
+        alert(`로컬 프리뷰 상태입니다. Vercel 배포 시 /api/activities 서버리스 함수를 통해 Supabase로 즉시 자동 전송됩니다.`);
+      } finally {
+        syncSupabaseBtn.disabled = false;
+        syncSupabaseBtn.innerHTML = originalHtml;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
+  }
+
+  // 8. Remote Supabase Fetch on Load
+  async function checkAndFetchSupabase() {
+    try {
+      const res = await fetch('/api/activities');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.connected && supabaseStatusText) {
+        supabaseStatusText.textContent = `Supabase Cloud 연결됨 (${data.count || 0}건)`;
+      }
+      if (data.activities && data.activities.length > 0) {
+        const currentCustom = getCustomActivities();
+        let addedCount = 0;
+        data.activities.forEach(remoteAct => {
+          const existsInDefault = defaultActivities.some(d => d.id === remoteAct.id);
+          const existsInCustom = currentCustom.some(c => c.id === remoteAct.id);
+          if (!existsInDefault && !existsInCustom) {
+            currentCustom.push(remoteAct);
+            addedCount++;
+          }
+        });
+        if (addedCount > 0) {
+          saveCustomActivities(currentCustom);
+          renderActivities();
+        }
+      }
+    } catch (e) {
+      // Offline / Static fallback mode
+    }
   }
 
   // Global ESC Modal Close
@@ -1480,6 +1559,7 @@ function initCircleActivitiesDB() {
     }
   });
 
-  // Initial Render
+  // Initial Render & Remote Check
   renderActivities();
+  checkAndFetchSupabase();
 }

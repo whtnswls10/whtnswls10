@@ -47,6 +47,24 @@
 
 ---
 
+## ⚡ Supabase 클라우드 데이터베이스 연동 안내
+
+본 프로젝트는 Vercel에 연동된 **Supabase** 데이터베이스에 원의 방정식 탐구 활동을 클라우드로 직접 영구 저장할 수 있도록 완벽히 구성되어 있습니다.
+
+### 1. Supabase 테이블 생성 (1회만 실행)
+Supabase 대시보드의 **SQL Editor**로 이동하여 프로젝트 루트에 포함된 [`supabase_schema.sql`](./supabase_schema.sql) 파일의 내용을 붙여넣고 **[Run]**을 클릭합니다:
+- 테이블명: `circle_activities`
+- 공개 읽기(SELECT) 및 등록/업데이트(INSERT/UPSERT) RLS 정책 자동 활성화
+
+### 2. Vercel + Supabase 자동 연동 원리
+- Vercel 대시보드의 **Integrations**에서 Supabase를 프로젝트와 연결하면 다음 환경변수가 Vercel 서버리스 런타임에 자동으로 주입됩니다:
+  - `SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_URL`
+  - `SUPABASE_ANON_KEY` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Vercel Serverless API 엔드포인트 [`/api/activities.js`](./api/activities.js)가 이 환경 변수를 자동으로 감지하여 Supabase REST API를 통해 데이터를 안전하게 저장하고 조회합니다.
+- 웹사이트 화면의 **[Supabase 동기화]** 버튼을 누르면 10대 기본 활동과 브라우저에서 작성한 모든 활동이 Supabase 클라우드로 즉시 일괄 동기화됩니다.
+
+---
+
 ## 🚀 로컬 실행 방법 (Local Preview)
 
 별도의 프로그램 설치 없이 바로 확인할 수 있습니다:
@@ -81,11 +99,15 @@ npx vercel
 
 ```
 직무연수/
+├── api/
+│   └── activities.js          # Vercel Serverless Function (Supabase REST CRUD API)
+├── supabase_schema.sql        # Supabase 테이블 및 RLS 정책 생성 SQL DDL
+├── .env.example               # Supabase 환경 변수 설정 템플릿
 ├── circle_activities_db.json  # 원의 방정식 표현 10대 탐구 활동 JSON 데이터베이스
 ├── circle_activities_db.js    # 브라우저 직접 실행 및 로컬 환경 지원 DB 모듈
 ├── index.html                 # 메인 웹 허브, 활동 DB 뷰어, 상세 모달, 시뮬레이터
 ├── style.css                  # 글래스모피즘 디자인 시스템, 블러 및 네온 스타일
-├── script.js                  # 캔버스 렌더러, 활동 DB 필터/검색, LocalStorage 동기화
+├── script.js                  # 캔버스 렌더러, 활동 DB 필터/검색, Supabase/LocalStorage 동기화
 ├── vercel.json                # Vercel 배포 라우팅 및 캐시/보안 헤더 설정
-└── README.md                  # 프로젝트 가이드, 활동 데이터베이스 명세 및 배포 안내
+└── README.md                  # 프로젝트 가이드, Supabase 연동 명세 및 배포 안내
 ```
