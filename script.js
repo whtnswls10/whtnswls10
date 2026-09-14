@@ -1488,7 +1488,53 @@ function initCircleActivitiesDB() {
     });
   }
 
-  // 7. Supabase Bulk Sync Button Handler
+  // 7. Supabase SQL Copy Button Handler
+  const copySqlBtn = document.getElementById('btn-copy-sql');
+  if (copySqlBtn) {
+    copySqlBtn.addEventListener('click', () => {
+      const sqlText = `-- Supabase Table & RLS Schema for Circle Activities
+CREATE TABLE IF NOT EXISTS public.circle_activities (
+  "id" TEXT PRIMARY KEY,
+  "title" TEXT NOT NULL,
+  "category" TEXT NOT NULL,
+  "category_name" TEXT,
+  "difficulty" TEXT DEFAULT '발전',
+  "equation_type" TEXT,
+  "equation_formula" TEXT NOT NULL,
+  "target_grade" TEXT DEFAULT '고등학교 1학년',
+  "competency" TEXT[] DEFAULT ARRAY['문제해결']::TEXT[],
+  "keywords" TEXT[] DEFAULT ARRAY['원의방정식']::TEXT[],
+  "concept_summary" TEXT,
+  "parameters" JSONB DEFAULT '{}'::JSONB,
+  "steps" JSONB DEFAULT '[]'::JSONB,
+  "evaluation_criteria" TEXT,
+  "real_world_application" TEXT,
+  "created_at" TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.circle_activities ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "circle_activities_select_policy" ON public.circle_activities;
+DROP POLICY IF EXISTS "circle_activities_insert_policy" ON public.circle_activities;
+DROP POLICY IF EXISTS "circle_activities_update_policy" ON public.circle_activities;
+
+CREATE POLICY "circle_activities_select_policy" ON public.circle_activities FOR SELECT TO public USING (true);
+CREATE POLICY "circle_activities_insert_policy" ON public.circle_activities FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "circle_activities_update_policy" ON public.circle_activities FOR UPDATE TO public USING (true) WITH CHECK (true);`;
+
+      navigator.clipboard.writeText(sqlText).then(() => {
+        const orig = copySqlBtn.innerHTML;
+        copySqlBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-300">복사 완료!</span>`;
+        if (window.lucide) window.lucide.createIcons();
+        setTimeout(() => {
+          copySqlBtn.innerHTML = orig;
+          if (window.lucide) window.lucide.createIcons();
+        }, 2000);
+      });
+    });
+  }
+
+  // 8. Supabase Bulk Sync Button Handler
   if (syncSupabaseBtn) {
     syncSupabaseBtn.addEventListener('click', async () => {
       const allActivities = getAllActivities();
