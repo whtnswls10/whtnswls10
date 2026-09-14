@@ -25,7 +25,13 @@
    - **확률과 통계**: 갈톤 보드(Galton Board)와 중심극한정리
    - **AI & 응용수학**: 경사하강법과 인공지능 최적화 손실 곡면
    - **함수와 대수**: 이차함수와 판별식 $D$의 기하학
-6. **Vercel 원클릭 배포 최적화**
+6. **🤖 AI 수학 질문 챗봇 (MathVerse AI 튜터 - MathBot)**
+   - OpenAI `gpt-4o-mini` 기반의 실시간 1:1 맞춤형 수학 질문 챗봇 탑재
+   - 초·중·고 교육과정에 맞춘 친절한 단계별(Step-by-step) 풀이 및 직관적 원리 설명
+   - **LaTeX / KaTeX 수식 자동 렌더링**: 분수, 거듭제곱, 근호, 미적분 기호 등을 수학 교재처럼 깔끔하게 시각화
+   - 우측 하단 플로팅 챗봇 위젯, 상단 내비게이션 퀵 버튼, 원클릭 추천 질문 칩 제공
+   - Vercel Serverless 엔드포인트([`/api/chat.js`](./api/chat.js))를 통해 `OPENAI_API_KEY`를 클라이언트에 노출하지 않는 안전한 통신 구조
+7. **Vercel 원클릭 배포 최적화**
    - Node.js 빌드 과정 없이 정적 파일(HTML, CSS, JS)로 구동되어 Vercel에서 100% 오류 없이 즉시 배포 가능 (`vercel.json` 내장)
 
 ---
@@ -62,6 +68,25 @@ Supabase 대시보드의 **SQL Editor**로 이동하여 프로젝트 루트에 �
   - `SUPABASE_ANON_KEY` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - Vercel Serverless API 엔드포인트 [`/api/activities.js`](./api/activities.js)가 이 환경 변수를 자동으로 감지하여 Supabase REST API를 통해 데이터를 안전하게 저장하고 조회합니다.
 - 웹사이트 화면의 **[Supabase 동기화]** 버튼을 누르면 10대 기본 활동과 브라우저에서 작성한 모든 활동이 Supabase 클라우드로 즉시 일괄 동기화됩니다.
+
+---
+
+## 🤖 AI 수학 튜터 챗봇 (OpenAI 연동 안내)
+
+본 플랫폼은 학생들이 언제든지 수학 질문을 하고 실시간 답변을 받을 수 있는 AI 수학 튜터 챗봇을 제공합니다.
+
+### Vercel 배포 시 OpenAI API 키 등록
+1. [Vercel 대시보드](https://vercel.com)에 로그인 후 해당 프로젝트를 선택합니다.
+2. **[Settings]** > **[Environment Variables]** 탭으로 이동합니다.
+3. 다음과 같이 환경 변수를 추가합니다:
+   - **Key**: `OPENAI_API_KEY`
+   - **Value**: 발급받으신 OpenAI API Key (`sk-...`)
+   - **Target**: Production, Preview, Development 모두 체크
+4. *(선택)* 모델을 변경하고 싶다면 `OPENAI_MODEL` 환경 변수에 `gpt-4o-mini` 또는 `gpt-4o`를 설정할 수 있습니다 (기본값: `gpt-4o-mini`).
+5. Vercel의 **[Deployments]** 탭에서 **Redeploy**를 1회 실행하면 서버리스 함수([`/api/chat.js`](./api/chat.js))에 환경변수가 즉시 반영됩니다.
+
+### 로컬 프리뷰 환경에서 테스트
+- `index.html`을 더블 클릭하여 로컬에서 실행할 경우, 챗봇 창 우측 상단의 **설정(⚙️)** 버튼을 클릭하여 브라우저 세션용 API 키를 임시 입력해 즉시 테스트할 수 있습니다.
 
 ---
 
