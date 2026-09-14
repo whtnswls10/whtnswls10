@@ -1,5 +1,6 @@
 // ==========================================
 // MathVerse - AI Math Tutor Chatbot (MathBot)
+// Powered by Vercel Serverless Function & OpenAI
 // ==========================================
 
 (function() {
@@ -9,38 +10,6 @@
   let isOpen = false;
   let isLoading = false;
   let messages = []; // [{ role: 'user'|'assistant', content: '...' }]
-  let pendingQuestion = ''; // Holds the user question to retry once key is provided
-
-  // Retrieve API Key with multi-stage priority fallback
-  function getEffectiveApiKey() {
-    // 1. config.js file (window.MATHVERSE_CONFIG.OPENAI_API_KEY)
-    if (window.MATHVERSE_CONFIG && window.MATHVERSE_CONFIG.OPENAI_API_KEY) {
-      return window.MATHVERSE_CONFIG.OPENAI_API_KEY.trim();
-    }
-    // 2. localStorage (persistent across browser sessions)
-    const localKey = localStorage.getItem('mathverse_openai_api_key');
-    if (localKey && localKey.trim()) {
-      return localKey.trim();
-    }
-    // 3. sessionStorage (fallback)
-    const sessionKey = sessionStorage.getItem('mathverse_custom_api_key');
-    if (sessionKey && sessionKey.trim()) {
-      return sessionKey.trim();
-    }
-    return '';
-  }
-
-  function saveEffectiveApiKey(key) {
-    const cleanKey = (key || '').trim();
-    if (cleanKey) {
-      localStorage.setItem('mathverse_openai_api_key', cleanKey);
-      sessionStorage.setItem('mathverse_custom_api_key', cleanKey);
-    } else {
-      localStorage.removeItem('mathverse_openai_api_key');
-      sessionStorage.removeItem('mathverse_custom_api_key');
-    }
-    updateStatusBadge();
-  }
 
   // DOM Elements cache
   let floatingBtn = null;
@@ -76,8 +45,7 @@
     buildChatInterface();
     attachEventListeners();
     renderInitialMessage();
-    updateStatusBadge();
-    checkServerConfig();
+    checkVercelApiStatus();
   });
 
   // 1. Build & Inject Chat UI into DOM
@@ -115,7 +83,7 @@
               <h3 class="text-sm font-bold text-white tracking-wide">MathBot AI 튜터</h3>
               <span id="math-chat-status" class="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>OpenAI gpt-4o-mini</span>
+                <span>Vercel AI (gpt-4o-mini)</span>
               </span>
             </div>
             <p class="text-[11px] text-slate-400">개념 설명 · 단계별 풀이 · LaTeX 수식 시각화</p>
@@ -126,10 +94,6 @@
           <!-- Reset Chat Button -->
           <button id="math-chat-clear-btn" class="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-slate-200 transition-colors" title="대화 초기화">
             <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-          </button>
-          <!-- Settings Button (Local Key fallback) -->
-          <button id="math-chat-settings-btn" class="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-slate-200 transition-colors" title="API 키 설정">
-            <i data-lucide="settings-2" class="w-4 h-4"></i>
           </button>
           <!-- Close Button -->
           <button id="math-chat-close-btn" class="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors" title="닫기">
@@ -167,40 +131,7 @@
           </button>
         </form>
         <div class="chat-footer-caption">
-          <span>LaTeX 수식($E=mc^2$) 자동 렌더링 지원 · 초·중·고 교육과정 연계</span>
-        </div>
-      </div>
-
-      <!-- Inline API Key Modal -->
-      <div id="math-chat-api-modal" class="chat-api-modal hidden">
-        <div class="chat-api-modal-content glass-panel-lg">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-              <i data-lucide="key" class="w-4 h-4 text-amber-400"></i>
-              <h4 class="text-xs font-bold text-white">OpenAI API 설정</h4>
-            </div>
-            <button type="button" id="close-api-modal-btn" class="text-slate-400 hover:text-white">
-              <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-          </div>
-          <p class="text-[11px] text-slate-300 mb-2 leading-relaxed">
-            - <strong>Vercel 배포 사이트</strong>: Vercel 환경변수 <code>OPENAI_API_KEY</code>로 자동 동작합니다.<br/>
-            - <strong>로컬 프리뷰(file://)</strong>: 브라우저에 API 키를 저장하면 로컬에서도 즉시 질문할 수 있습니다 (로컬 브라우저에만 보관됨).
-          </p>
-          <input 
-            type="password" 
-            id="modal-custom-api-key" 
-            placeholder="sk-..." 
-            class="glass-input w-full text-xs py-2 px-3 mb-3 font-mono"
-          />
-          <div class="flex items-center justify-between gap-2">
-            <button type="button" id="clear-custom-key-btn" class="glass-btn text-[11px] py-1 px-3 text-rose-300 hover:bg-rose-500/20">
-              키 삭제
-            </button>
-            <button type="button" id="save-custom-key-btn" class="glass-btn glass-btn-primary text-[11px] py-1 px-4">
-              저장 및 적용
-            </button>
-          </div>
+          <span>LaTeX 수식($E=mc^2$) 자동 렌더링 지원 · Vercel 환경변수(OPENAI_API_KEY) 연동</span>
         </div>
       </div>
     `;
@@ -276,70 +207,7 @@
       }
     });
 
-    // API Key modal
-    const settingsBtn = document.getElementById('math-chat-settings-btn');
-    const apiModal = document.getElementById('math-chat-api-modal');
-    const closeApiModalBtn = document.getElementById('close-api-modal-btn');
-    const saveCustomKeyBtn = document.getElementById('save-custom-key-btn');
-    const clearCustomKeyBtn = document.getElementById('clear-custom-key-btn');
-    const customKeyInput = document.getElementById('modal-custom-api-key');
-
-    settingsBtn.addEventListener('click', () => {
-      customKeyInput.value = getEffectiveApiKey();
-      apiModal.classList.toggle('hidden');
-    });
-    closeApiModalBtn.addEventListener('click', () => {
-      apiModal.classList.add('hidden');
-    });
-    saveCustomKeyBtn.addEventListener('click', () => {
-      const key = (customKeyInput.value || '').trim();
-      saveEffectiveApiKey(key);
-      apiModal.classList.add('hidden');
-      alert(key ? '✅ API 키가 저장되었습니다! 이제 로컬에서도 정상 질문하실 수 있습니다.' : 'API 키가 삭제되었습니다.');
-      
-      // Auto-retry pending question if exists
-      if (key && pendingQuestion) {
-        const q = pendingQuestion;
-        pendingQuestion = '';
-        chatInput.value = q;
-        handleSend();
-      }
-    });
-    clearCustomKeyBtn.addEventListener('click', () => {
-      saveEffectiveApiKey('');
-      customKeyInput.value = '';
-      alert('저장된 API 키가 삭제되었습니다.');
-    });
-
-    // Delegate inline key submission inside chat messages
-    chatBody.addEventListener('click', (e) => {
-      const target = e.target.closest('[data-action="save-inline-key"]');
-      if (target) {
-        const wrap = target.closest('.inline-key-card');
-        if (wrap) {
-          const input = wrap.querySelector('.inline-key-input');
-          const key = (input ? input.value : '').trim();
-          if (!key) {
-            alert('OpenAI API 키 (sk-...)를 입력해 주세요.');
-            return;
-          }
-          saveEffectiveApiKey(key);
-          wrap.innerHTML = `<div class="text-xs text-emerald-300 font-semibold py-2">✅ API 키가 성공적으로 저장되었습니다! 질문을 처리합니다...</div>`;
-          
-          // Re-trigger the pending question
-          if (pendingQuestion) {
-            const q = pendingQuestion;
-            pendingQuestion = '';
-            setTimeout(() => {
-              chatInput.value = q;
-              handleSend();
-            }, 300);
-          }
-        }
-      }
-    });
-
-    // Global keyboard shortcut Ctrl + J or Alt + M to open chatbot
+    // Global keyboard shortcut Ctrl + J to open chatbot
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
         e.preventDefault();
@@ -348,53 +216,32 @@
     });
   }
 
-  // Update Status Badge UI
-  function updateStatusBadge() {
-    if (!statusBadge) return;
-    const currentKey = getEffectiveApiKey();
-    const isLocalFile = window.location.protocol === 'file:';
-
-    if (currentKey) {
-      statusBadge.innerHTML = `
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        <span>연동 완료 (gpt-4o-mini)</span>
-      `;
-      statusBadge.className = "px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1";
-    } else if (isLocalFile) {
-      statusBadge.innerHTML = `
-        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-        <span>로컬 모드 (키 입력 대기)</span>
-      `;
-      statusBadge.className = "px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 cursor-pointer";
-      statusBadge.onclick = () => {
-        document.getElementById('math-chat-settings-btn').click();
-      };
-    } else {
-      statusBadge.innerHTML = `
-        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-        <span>Vercel Serverless</span>
-      `;
+  // 3. Check Vercel API Status
+  async function checkVercelApiStatus() {
+    if (window.location.protocol === 'file:') {
+      if (statusBadge) {
+        statusBadge.innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          <span>Vercel 배포 실행 모드</span>
+        `;
+      }
+      return;
     }
-  }
-
-  // Check server configuration (for hosted Vercel environment)
-  async function checkServerConfig() {
-    if (window.location.protocol === 'file:') return;
 
     try {
       const res = await fetch('/api/chat');
       if (res.ok) {
         const data = await res.json();
-        if (data.configured) {
+        if (data.configured && statusBadge) {
           statusBadge.innerHTML = `
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            <span>Vercel 연동됨 (${data.model || 'gpt-4o-mini'})</span>
+            <span>Vercel 연결됨 (${data.model || 'gpt-4o-mini'})</span>
           `;
           statusBadge.className = "px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1";
         }
       }
     } catch (e) {
-      // Offline / local preview fallback
+      // Ignore network errors on initial check
     }
   }
 
@@ -421,7 +268,7 @@
     floatingBtn.classList.remove('active');
   }
 
-  // 3. Render Initial Welcome Message
+  // 4. Render Initial Welcome Message
   function renderInitialMessage() {
     appendMessage({
       role: 'assistant',
@@ -429,14 +276,24 @@
     });
   }
 
-  // 4. Handle Send Message
+  // 5. Handle Send Message (Calls Vercel /api/chat)
   async function handleSend() {
     if (isLoading) return;
     const text = (chatInput.value || '').trim();
     if (!text) return;
 
-    const effectiveKey = getEffectiveApiKey();
-    const isLocalFile = window.location.protocol === 'file:';
+    // If opened via local file:// protocol
+    if (window.location.protocol === 'file:') {
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+
+      appendMessage({ role: 'user', content: text });
+      appendMessage({
+        role: 'assistant',
+        content: `🚀 **안내**: 본 AI 수학 챗봇은 **Vercel 배포 환경**에서 환경변수(\`OPENAI_API_KEY\`)로 안전하게 구동됩니다.\n\nGitHub에 푸시된 레포지토리와 연동된 **Vercel 웹사이트 URL(https://...vercel.app)**에 접속하시면 등록해 두신 환경변수로 즉시 100% 정상 작동합니다!`
+      });
+      return;
+    }
 
     // Reset input
     chatInput.value = '';
@@ -453,56 +310,38 @@
     const typingIndicator = showTypingIndicator();
 
     try {
-      let answerText = '';
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: messages.slice(-8),
+          question: text
+        })
+      });
 
-      // CASE 1: If an effective local API key is already set, call OpenAI directly
-      // (This guarantees 100% smooth operation on file:// without needing any backend server)
-      if (effectiveKey) {
-        answerText = await callDirectOpenAI(text, messages, effectiveKey);
-      } 
-      // CASE 2: Try Vercel Serverless Function (/api/chat)
-      else if (!isLocalFile) {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: messages.slice(-8),
-            question: text
-          })
-        }).catch(() => null);
-
-        if (res && res.ok) {
-          const data = await res.json();
-          if (data.success) {
-            answerText = data.answer;
-          } else {
-            answerText = `⚠️ **Vercel API 안내**: ${data.message || 'API 키를 확인해 주세요.'}`;
-          }
-        } else {
-          // If hosted but /api/chat failed or unconfigured
-          pendingQuestion = text;
-          answerText = buildInlineKeyPromptHtml();
-        }
-      } 
-      // CASE 3: Running locally on file:// without key yet
-      else {
-        pendingQuestion = text;
-        answerText = buildInlineKeyPromptHtml();
-      }
-
-      // Remove typing indicator
       typingIndicator.remove();
 
-      // Add assistant message
-      const assistantMsg = { role: 'assistant', content: answerText };
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || `서버 응답 오류 (HTTP ${res.status})`);
+      }
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message || '답변을 생성하지 못했습니다.');
+      }
+
+      const assistantMsg = { role: 'assistant', content: data.answer };
       messages.push(assistantMsg);
       appendMessage(assistantMsg);
 
     } catch (err) {
-      typingIndicator.remove();
+      if (typingIndicator) typingIndicator.remove();
       appendMessage({
         role: 'assistant',
-        content: `❌ **오류가 발생했습니다**: ${err.message || '네트워크 연결 상태나 API 키를 확인해 주세요.'}`
+        content: `⚠️ **Vercel AI 오류**: ${err.message || '요청 처리 중 문제가 발생했습니다.'}\n\nVercel 대시보드(Settings -> Environment Variables)에 \`OPENAI_API_KEY\`가 등록되어 있는지 확인해 주세요.`
       });
     } finally {
       isLoading = false;
@@ -511,98 +350,7 @@
     }
   }
 
-  // HTML prompt when running locally without a key configured
-  function buildInlineKeyPromptHtml() {
-    return `💡 **로컬 환경(file://) 실행 안내**
-
-현재 Vercel 웹 서버가 아닌 **내 컴퓨터의 로컬 파일(\`file://\`)**로 열려 있어, Vercel 클라우드에 등록된 \`OPENAI_API_KEY\` 환경변수에 브라우저가 직접 접근할 수 없습니다.
-
-아래 방법 중 **하나**를 선택하시면 즉시 정상 작동합니다:
-
-<div class="inline-key-card p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 my-2">
-  <div class="text-xs font-bold text-white mb-1.5 flex items-center gap-1.5">
-    <span>🔑 1초 만에 로컬 키 등록 (추천)</span>
-  </div>
-  <p class="text-[11px] text-slate-300 mb-2">
-    여기에 API 키를 붙여넣으시면 브라우저에 안전하게 저장되어 다음부터는 다시 묻지 않고 바로 답변합니다:
-  </p>
-  <div class="flex items-center gap-2">
-    <input 
-      type="password" 
-      placeholder="sk-proj-... 또는 sk-..." 
-      class="inline-key-input glass-input w-full text-xs py-1.5 px-3 font-mono"
-    />
-    <button type="button" data-action="save-inline-key" class="glass-btn glass-btn-primary text-xs py-1.5 px-3 whitespace-nowrap shadow-md shadow-purple-500/20">
-      저장 및 답변받기
-    </button>
-  </div>
-</div>
-
-<div class="flex items-center gap-2 mt-2 pt-1 border-t border-white/10 text-[11px] text-slate-400">
-  <span>또는:</span>
-  <a href="https://github.com/whtnswls10/whtnswls10" target="_blank" class="text-purple-300 hover:text-white underline">
-    GitHub 레포지토리
-  </a>
-  <span>에 연동된 Vercel 배포 URL로 접속하시면 환경변수로 바로 동작합니다.</span>
-</div>`;
-  }
-
-  // Direct client OpenAI call
-  async function callDirectOpenAI(text, history, apiKey) {
-    const systemPrompt = `당신은 초·중·고등학생을 위한 따뜻하고 친절하며 명쾌한 AI 수학 전문 튜터 '매쓰봇(MathBot)'입니다.
-다음 지침을 철저히 따라 학생의 질문에 답변하세요:
-
-1. **교육적 접근 & 태도**:
-   - 학생의 질문에 대해 바로 기계적인 정답만 내놓지 말고, 핵심 원리와 단계별(Step-by-step) 풀이 과정을 알기 쉽게 설명해 주세요.
-   - 친절하고 격려하는 어조(해요체, 존댓말)를 사용하며, 칭찬을 아끼지 마세요.
-   - 필요하다면 직관적인 비유나 시각화 조언을 덧붙여 주세요.
-
-2. **수식 표기 규칙 (가장 중요)**:
-   - 모든 수학 기호, 변수, 방정식, 수식은 반드시 LaTeX 문법을 사용하세요.
-   - 문장 속 인라인 수식: $y = ax^2 + bx + c$, $(x-a)^2 + (y-b)^2 = r^2$, $\\frac{a}{b}$, $\\sqrt{x}$
-   - 독립된 블록 수식:
-     $$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$
-
-3. **답변 구성**:
-   - 💡 **핵심 개념**: 공식 정의나 핵심 포인트
-   - 🔍 **단계별 풀이 / 원리 설명**: 논리적 흐름
-   - 📐 **직관적 팁 또는 기억법**: 쉽게 기억하는 방법`;
-
-    const chatHistory = [{ role: 'system', content: systemPrompt }].concat(
-      history.slice(-8).map(m => ({
-        role: m.role === 'assistant' ? 'assistant' : 'user',
-        content: String(m.content || '')
-      }))
-    );
-
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: chatHistory,
-        temperature: 0.6,
-        max_tokens: 1500
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      if (res.status === 401) {
-        saveEffectiveApiKey(''); // Clear invalid key
-        throw new Error('입력하신 OpenAI API 키가 올바르지 않습니다. 키를 다시 확인해 주세요.');
-      }
-      throw new Error(err.error?.message || `HTTP ${res.status}: OpenAI API 호출 실패`);
-    }
-
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || '답변을 생성하지 못했습니다.';
-  }
-
-  // 5. Append Message to UI & Render LaTeX
+  // 6. Append Message to UI & Render LaTeX
   function appendMessage(msg) {
     const isUser = msg.role === 'user';
     const msgEl = document.createElement('div');
@@ -618,9 +366,6 @@
         </div>
       `;
     } else {
-      const isHtmlContent = msg.content.includes('<div class="inline-key-card');
-      const renderedBody = isHtmlContent ? msg.content : parseMarkdownAndMath(msg.content);
-
       msgEl.innerHTML = `
         <div class="bot-avatar">
           <i data-lucide="bot" class="w-4 h-4 text-indigo-400"></i>
@@ -630,19 +375,17 @@
             <span class="bot-name">매쓰봇</span>
             <span class="bubble-time">${timeString}</span>
           </div>
-          <div class="bot-bubble markdown-body">${renderedBody}</div>
-          ${!isHtmlContent ? `
-            <div class="bot-bubble-actions">
-              <button class="copy-btn" title="답변 복사" data-content="${escapeHtml(msg.content)}">
-                <i data-lucide="copy" class="w-3 h-3"></i>
-                <span>복사</span>
-              </button>
-              <button class="speak-btn" title="음성으로 듣기" data-content="${escapeHtml(msg.content)}">
-                <i data-lucide="volume-2" class="w-3 h-3"></i>
-                <span>읽기</span>
-              </button>
-            </div>
-          ` : ''}
+          <div class="bot-bubble markdown-body">${parseMarkdownAndMath(msg.content)}</div>
+          <div class="bot-bubble-actions">
+            <button class="copy-btn" title="답변 복사" data-content="${escapeHtml(msg.content)}">
+              <i data-lucide="copy" class="w-3 h-3"></i>
+              <span>복사</span>
+            </button>
+            <button class="speak-btn" title="음성으로 듣기" data-content="${escapeHtml(msg.content)}">
+              <i data-lucide="volume-2" class="w-3 h-3"></i>
+              <span>읽기</span>
+            </button>
+          </div>
         </div>
       `;
     }
@@ -694,7 +437,7 @@
     chatBody.scrollTop = chatBody.scrollHeight;
   }
 
-  // 6. Typing Indicator
+  // 7. Typing Indicator
   function showTypingIndicator() {
     const indicator = document.createElement('div');
     indicator.className = 'chat-message-row bot-row typing-indicator-row';
@@ -715,7 +458,7 @@
     return indicator;
   }
 
-  // 7. Render KaTeX Math Expressions
+  // 8. Render KaTeX Math Expressions
   function renderMath(element) {
     if (window.renderMathInElement) {
       try {
@@ -734,7 +477,7 @@
     }
   }
 
-  // 8. Simple Markdown Parser with Math Protection
+  // 9. Markdown Parser with Math Protection
   function parseMarkdownAndMath(text) {
     if (!text) return '';
 
@@ -801,12 +544,11 @@
       .replace(/'/g, '&#039;');
   }
 
-  // Expose global controller for buttons elsewhere on the page
+  // Global controller
   window.MathBot = {
     open: openChat,
     close: closeChat,
     toggle: toggleChat,
-    setApiKey: saveEffectiveApiKey,
     ask: function(question) {
       openChat();
       if (chatInput) {

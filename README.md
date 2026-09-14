@@ -75,20 +75,15 @@ Supabase 대시보드의 **SQL Editor**로 이동하여 프로젝트 루트에 �
 
 본 플랫폼은 학생들이 언제든지 수학 질문을 하고 실시간 답변을 받을 수 있는 AI 수학 튜터 챗봇을 제공합니다.
 
-### Vercel 배포 시 OpenAI API 키 등록
+### Vercel 배포 시 OpenAI API 키 연동 (핵심)
 1. [Vercel 대시보드](https://vercel.com)에 로그인 후 해당 프로젝트를 선택합니다.
 2. **[Settings]** > **[Environment Variables]** 탭으로 이동합니다.
-3. 다음과 같이 환경 변수를 추가합니다:
+3. 환경 변수를 등록합니다:
    - **Key**: `OPENAI_API_KEY`
    - **Value**: 발급받으신 OpenAI API Key (`sk-...`)
    - **Target**: Production, Preview, Development 모두 체크
-4. *(선택)* 모델을 변경하고 싶다면 `OPENAI_MODEL` 환경 변수에 `gpt-4o-mini` 또는 `gpt-4o`를 설정할 수 있습니다 (기본값: `gpt-4o-mini`).
-5. Vercel의 **[Deployments]** 탭에서 **Redeploy**를 1회 실행하면 서버리스 함수([`/api/chat.js`](./api/chat.js))에 환경변수가 즉시 반영됩니다.
-
-### 로컬 프리뷰 환경(file://)에서 테스트하는 3가지 방법
-1. **방법 1 (가장 간편)**: `index.html`을 브라우저로 열고 챗봇에 질문 시 나타나는 입력창에 API 키를 붙여넣으면, 브라우저에 자동 저장되어 즉시 답변이 나옵니다 (이후 재입력 불필요).
-2. **방법 2 (원클릭 환경변수 동기화)**: 폴더 내 [`sync_env.bat`](./sync_env.bat) 파일을 더블 클릭하면 Windows 환경변수의 `OPENAI_API_KEY`를 감지하여 로컬 설정(`config.js`)을 자동 생성합니다.
-3. **방법 3 (설정 아이콘)**: 챗봇 창 우측 상단의 **설정(⚙️)** 버튼을 눌러 언제든 키를 확인하거나 변경·삭제할 수 있습니다.
+4. *(선택)* 모델 커스텀: `OPENAI_MODEL` (`gpt-4o-mini` 또는 `gpt-4o`, 기본값: `gpt-4o-mini`).
+5. 배포된 Vercel 웹사이트 URL로 접속하시면 서버리스 함수([`/api/chat.js`](./api/chat.js))를 통해 학생 질문에 대한 AI 수학 튜터의 실시간 답변이 100% 자동 동작합니다.
 
 ---
 

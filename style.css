@@ -854,44 +854,6 @@ body {
   text-align: center;
 }
 
-/* API Settings Modal inside Chat */
-.chat-api-modal {
-  position: absolute;
-  inset: 0;
-  background: rgba(5, 8, 16, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 90;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.25rem;
-  transition: opacity 0.2s;
-}
-
-.chat-api-modal.hidden {
-  display: none;
-}
-
-.chat-api-modal-content {
-  width: 100%;
-  padding: 1.25rem;
-  border-radius: 1rem;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-/* Inline Key Card in Chat Message */
-.inline-key-card {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-  animation: fadeIn 0.3s ease;
-}
-
-.inline-key-card input:focus {
-  border-color: rgba(168, 85, 247, 0.7);
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
-}
-
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .math-chat-trigger {
