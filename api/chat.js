@@ -11,16 +11,31 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // 1. Check API Key from Environment Variables (or client header fallback for testing)
-  const apiKey = process.env.OPENAI_API_KEY || req.headers['x-openai-key'];
+  // 1. Check and Sanitize API Key from Environment Variables
+  // Handles cases where the key was accidentally pasted multiple times or contains newlines (\r, \n)
+  let rawKey = process.env.OPENAI_API_KEY || req.headers['x-openai-key'] || '';
+  if (typeof rawKey !== 'string') {
+    rawKey = String(rawKey);
+  }
+  rawKey = rawKey.trim();
+
+  // Extract a pure, valid single-line OpenAI key pattern (sk-...)
+  let apiKey = '';
+  const keyMatch = rawKey.match(/sk-[A-Za-z0-9_\-]+/);
+  if (keyMatch) {
+    apiKey = keyMatch[0].trim();
+  } else if (rawKey) {
+    // Fallback: take first line and strip invalid HTTP header characters
+    apiKey = rawKey.split(/[\r\n]+/)[0].replace(/["'\s\r\n]/g, '').trim();
+  }
 
   // Status check endpoint (GET)
   if (req.method === 'GET') {
     return res.status(200).json({
-      configured: Boolean(process.env.OPENAI_API_KEY),
+      configured: Boolean(apiKey),
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       provider: 'OpenAI Chat Completions API',
-      message: process.env.OPENAI_API_KEY
+      message: apiKey
         ? 'OpenAI API key is configured and ready.'
         : 'OPENAI_API_KEY environment variable is not configured yet.'
     });
@@ -34,7 +49,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       success: false,
       error: 'OPENAI_API_KEY_MISSING',
-      message: '서버에 OPENAI_API_KEY 환경변수가 설정되지 않았습니다. Vercel 대시보드의 Settings -> Environment Variables에서 등록해 주세요.'
+      message: '서버에 올바른 형식의 OPENAI_API_KEY 환경변수가 감지되지 않았습니다. Vercel 대시보드의 Settings -> Environment Variables에서 등록해 주세요.'
     });
   }
 
