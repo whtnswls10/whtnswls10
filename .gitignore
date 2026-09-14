@@ -1,0 +1,16 @@
+# Environment variables & Local secrets
+.env
+.env.local
+.env.*.local
+config.js
+
+# Dependencies & Vercel build
+node_modules/
+.vercel
+.output
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
