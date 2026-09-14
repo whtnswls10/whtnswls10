@@ -1,0 +1,463 @@
+﻿{
+  "databaseInfo": {
+    "title": "원의 방정식 표현 및 탐구 활동 데이터베이스 (Circle Equation Activities DB)",
+    "version": "1.0.0",
+    "curriculum": "2022 개정 수학과 교육과정 (공통수학1 / 해석기하 / 도형의 방정식)",
+    "subject": "수학 (고등학교 공통수학1)",
+    "unit": "III. 도형의 방정식 > 2. 원의 방정식",
+    "totalActivities": 10,
+    "lastUpdated": "2026-09-14",
+    "description": "평면 위의 한 정점과 일정한 거리의 자취로서의 원의 정의부터 표준형, 일반형, 좌표축 접촉, 원과 직선의 위치관계, 접선, 그리고 지진 삼각측량 등 실생활 모델링까지 포괄하는 탐구 중심 활동 데이터베이스입니다."
+  },
+  "categories": [
+    { "id": "standard-general", "name": "표준형 & 일반형", "badgeColor": "indigo" },
+    { "id": "axis-tangent", "name": "좌표축 접촉", "badgeColor": "cyan" },
+    { "id": "line-circle", "name": "위치관계 & 접선", "badgeColor": "rose" },
+    { "id": "real-world", "name": "실생활 융합 모델링", "badgeColor": "emerald" },
+    { "id": "locus-family", "name": "심화 자취 & 원의 족", "badgeColor": "amber" }
+  ],
+  "activities": [
+    {
+      "id": "circle-act-01",
+      "title": "컴퍼스와 자취: 두 점 사이 거리로 원의 방정식 표준형 유도하기",
+      "category": "standard-general",
+      "categoryName": "표준형 & 일반형",
+      "difficulty": "기본",
+      "equationType": "표준형 (Standard Form)",
+      "equationFormula": "(x - a)^2 + (y - b)^2 = r^2",
+      "targetGrade": "고등학교 1학년",
+      "competency": ["개념이해", "수학적 추론", "기호 표현"],
+      "keywords": ["원의 정의", "중심", "반지름", "거리 공식", "표준형", "자취"],
+      "conceptSummary": "평면 위의 한 정점 C(a, b)와 일정한 거리 r에 있는 점 P(x, y)의 집합이 원입니다. 피타고라스 정리와 두 점 사이의 거리 공식 CP = √((x-a)² + (y-b)²) = r 에서 양변을 제곱하여 표준형 (x-a)² + (y-b)² = r²을 유도합니다.",
+      "parameters": {
+        "centerX": 2,
+        "centerY": -3,
+        "radius": 5,
+        "expanded": "x² + y² - 4x + 6y - 12 = 0"
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "정점과 동점의 정의",
+          "instruction": "모눈종이 또는 인터랙티브 캔버스 위 정점 C(2, -3)을 찍고, 컴퍼스의 벌림을 5칸으로 고정하여 회전시킵니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "거리 공식 적용",
+          "instruction": "동점 P(x, y)에 대해 피타고라스 정리를 적용하여 선분 CP의 길이를 x, y로 표현하는 수식을 세웁니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "표준형 완성",
+          "instruction": "√((x - 2)² + (y - (-3))²) = 5 의 양변을 제곱하여 (x - 2)² + (y + 3)² = 25 를 완성합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "원 위의 점 검증",
+          "instruction": "점 (6, 0), (2, 2), (-1, 1) 등이 이 원 위에 존재하는지 대입하여 참/거짓을 검증합니다."
+        }
+      ],
+      "evaluationCriteria": "원의 기하학적 정의를 명확히 진술하고 두 점 사이의 거리 공식으로부터 표준형 방정식을 오차 없이 유도할 수 있는가?",
+      "realWorldApplication": "스마트폰 나침반 앱의 자이로 캘리브레이션 시 360도 회전 궤적의 중심점과 균일 반경 보정에 활용됩니다."
+    },
+    {
+      "id": "circle-act-02",
+      "title": "완전제곱식 변형: 일반형에서 중심과 반지름 복원 및 성립 조건",
+      "category": "standard-general",
+      "categoryName": "표준형 & 일반형",
+      "difficulty": "기본",
+      "equationType": "일반형 (General Form)",
+      "equationFormula": "x^2 + y^2 + Ax + By + C = 0 \\iff (x + \\frac{A}{2})^2 + (y + \\frac{B}{2})^2 = \\frac{A^2 + B^2 - 4C}{4}",
+      "targetGrade": "고등학교 1학년",
+      "competency": ["대수 연산", "수학적 추론", "조건 판별"],
+      "keywords": ["일반형", "완전제곱식", "원의 성립조건", "실원", "점원", "허원"],
+      "conceptSummary": "x와 y에 대한 이차방정식 x² + y² + Ax + By + C = 0을 완전제곱식으로 변형하면 중심은 (-A/2, -B/2)이고 반지름 제곱은 (A² + B² - 4C)/4가 됩니다. 따라서 실질적인 원(실원)이 되기 위한 필요충분조건은 판별값 A² + B² - 4C > 0 입니다.",
+      "parameters": {
+        "A": -6,
+        "B": 8,
+        "C": 9,
+        "centerX": 3,
+        "centerY": -4,
+        "radius": 4,
+        "discriminant": 64
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "동류항 묶기",
+          "instruction": "(x² + Ax) + (y² + By) = -C 형태로 항을 정리합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "완전제곱식 상수항 더하기",
+          "instruction": "좌변과 우변에 각각 (A/2)²과 (B/2)²을 동시에 더해 완전제곱식으로 만듭니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "원의 성립 조건 판별",
+          "instruction": "우변 (A² + B² - 4C)/4의 부호가 양수(실원), 0(점원), 음수(허원, 자취 없음)로 갈리는 경계 조건을 분석합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "변수 파라미터 조작",
+          "instruction": "상수 C를 조절하며 원의 크기가 축소되다가 한 점으로 사라지는 과정을 관찰합니다."
+        }
+      ],
+      "evaluationCriteria": "일반형 방정식을 완전제곱식으로 변형하여 중심과 반지름을 정확히 도출하고, 원이 성립하기 위한 상수 범위를 구할 수 있는가?",
+      "realWorldApplication": "컴퓨터 비전 영상 처리에서 허프 변환(Hough Circle Transform) 알고리즘이 픽셀 윤곽선으로부터 원형 객체를 역추적할 때 사용됩니다."
+    },
+    {
+      "id": "circle-act-03",
+      "title": "좌표축에 접하는 원의 방정식 표현 활동 (x축, y축 및 동시 접촉)",
+      "category": "axis-tangent",
+      "categoryName": "좌표축 접촉",
+      "difficulty": "발전",
+      "equationType": "축 접촉형 (Axis-tangent Form)",
+      "equationFormula": "x축 접: (x-a)^2 + (y-b)^2 = b^2 \\quad | \\quad 동시 접: (x \\pm r)^2 + (y \\pm r)^2 = r^2",
+      "targetGrade": "고등학교 1학년",
+      "competency": ["문제해결", "기하적 직관", "사분면 부호 판별"],
+      "keywords": ["x축 접촉", "y축 접촉", "동시 접촉", "사분면", "반지름과 중심 관계"],
+      "conceptSummary": "원이 x축에 접하면 중심의 y좌표 절댓값이 반지름(|b|=r)이 되고, y축에 접하면 중심의 x좌표 절댓값이 반지름(|a|=r)이 됩니다. x축과 y축에 동시에 접하면 중심이 직선 y = x 또는 y = -x 위에 존재하여 중심 좌표가 (±r, ±r)로 결정됩니다.",
+      "parameters": {
+        "quadrant": 1,
+        "centerX": 3,
+        "centerY": 3,
+        "radius": 3,
+        "tangentType": "x-and-y-axes"
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "x축에 접하는 원 탐구",
+          "instruction": "중심이 (3, -4)이고 x축에 접하는 원의 반지름 r = |-4| = 4임을 확인하고 표준형을 작성합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "y축에 접하는 원 탐구",
+          "instruction": "중심이 (-2, 5)이고 y축에 접하는 원의 반지름 r = |-2| = 2임을 확인하고 표준형을 작성합니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "두 축 동시 접촉과 사분면 분기",
+          "instruction": "점 (2, 1)을 지나면서 x축과 y축에 동시에 접하는 두 원의 방정식을 세우고 풀이합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "내접원 기하 확인",
+          "instruction": "원뿔 단면 및 모서리에 꼭 끼워진 바퀴의 기하학적 접점 위치를 확인합니다."
+        }
+      ],
+      "evaluationCriteria": "점이 위치한 사분면을 파악하여 중심 좌표의 부호를 올바르게 설정하고 미지수 r에 대한 이차방정식을 정확히 풀어낼 수 있는가?",
+      "realWorldApplication": "기계 공학에서 파이프 배관 모서리 코너링 설계 및 자동차 바퀴 하우징의 곡률 반경 설계에 응용됩니다."
+    },
+    {
+      "id": "circle-act-04",
+      "title": "세 점을 지나는 외접원의 방정식 결정과 외심 좌표 삼각측량",
+      "category": "standard-general",
+      "categoryName": "표준형 & 일반형",
+      "difficulty": "발전",
+      "equationType": "세 점 결정형 (Three Points / Circumcircle)",
+      "equationFormula": "x^2 + y^2 + Ax + By + C = 0 \\quad \\text{또는} \\quad \\overline{OA} = \\overline{OB} = \\overline{OC}",
+      "targetGrade": "고등학교 1학년",
+      "competency": ["문제해결", "연립방정식", "외심과 수직이등분선"],
+      "keywords": ["세 점", "외접원", "외심", "수직이등분선", "삼각형", "연립일차방정식"],
+      "conceptSummary": "일직선 위에 있지 않은 세 점 A(x₁, y₁), B(x₂, y₂), C(x₃, y₃)을 지나는 원은 오직 하나로 결정됩니다. 일반형 x² + y² + Ax + By + C = 0에 세 점의 좌표를 각각 대입하여 A, B, C에 대한 미지수 3개의 연립일차방정식을 풀거나, 세 변의 수직이등분선의 교점(외심)을 구합니다.",
+      "parameters": {
+        "pointA": { "x": 0, "y": 0 },
+        "pointB": { "x": 6, "y": 0 },
+        "pointC": { "x": 0, "y": 8 },
+        "circumcenter": { "x": 3, "y": 4 },
+        "radius": 5,
+        "equation": "x² + y² - 6x - 8y = 0"
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "세 점 좌표 배치",
+          "instruction": "세 점 A(0, 0), B(6, 0), C(0, 8)을 좌표평면에 찍고 직각삼각형 구조를 파악합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "일반형에 대입하여 연립",
+          "instruction": "점 A(0,0) 대입 시 C=0, B(6,0) 대입 시 36+6A=0 → A=-6, C(0,8) 대입 시 64+8B=0 → B=-8을 구합니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "수직이등분선 교점과 비교",
+          "instruction": "선분 AB의 수직이등분선 x=3과 선분 AC의 수직이등분선 y=4의 교점 (3, 4)가 중심과 일치함을 확인합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "외접원 궤적 작도",
+          "instruction": "중심 (3, 4), 반지름 r = √(3²+4²) = 5 인 원 (x-3)² + (y-4)² = 25를 완성합니다."
+        }
+      ],
+      "evaluationCriteria": "세 점이 한 직선 위에 있지 않음을 확인하고, 일반형 대입법 또는 기하학적 수직이등분선법 중 효율적인 방법으로 원의 방정식을 도출할 수 있는가?",
+      "realWorldApplication": "세 도시의 중심에 들어설 응급 거점 종합병원의 부지 선정(세 도시로부터의 이송 거리가 모두 동일한 지점)에 활용됩니다."
+    },
+    {
+      "id": "circle-act-05",
+      "title": "원과 직선의 위치관계 탐구: 판별식 D와 중심-직선 거리 d의 듀얼 판정법",
+      "category": "line-circle",
+      "categoryName": "위치관계 & 접선",
+      "difficulty": "발전",
+      "equationType": "위치관계 (Distance vs Radius)",
+      "equationFormula": "d = \\frac{|a m - b + k|}{\\sqrt{m^2 + 1}} \\quad \\begin{cases} d < r & \\text{서로 다른 두 점} \\\\ d = r & \\text{접함 (한 점)} \\\\ d > r & \\text{만나지 않음} \\end{cases}",
+      "targetGrade": "고등학교 1학년",
+      "competency": ["수학적 추론", "대수와 기하 연결", "다양한 풀이 비교"],
+      "keywords": ["원과 직선", "점과 직선 사이 거리", "판별식 D", "접선", "교점 개수", "d와 r의 비교"],
+      "conceptSummary": "원의 중심 C(a, b)와 직선 mx - y + k = 0 사이의 거리 d를 점과 직선 사이 거리 공식으로 구하고 반지름 r과 비교합니다. d < r이면 2점 교차, d = r이면 1점 접함, d > r이면 교점 없음입니다. 이는 연립이차방정식의 판별식 D > 0, D = 0, D < 0과 기하학적으로 완벽히 동치입니다.",
+      "parameters": {
+        "circle": { "centerX": 0, "centerY": 0, "radius": 2 },
+        "line": { "slope": 1, "intercept": 2.828 },
+        "distance": 2.0,
+        "state": "tangent (d = r)"
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "원과 직선 모델링",
+          "instruction": "단위원 x² + y² = 4 와 기울기가 1인 직선 y = x + k 를 설정합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "거리 d 공식 계산",
+          "instruction": "중심 (0, 0)과 직선 x - y + k = 0 사이 거리 d = |k| / √(1² + (-1)²) = |k| / √2 를 계산합니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "k값에 따른 위치 변화 관찰",
+          "instruction": "k = 2일 때 d = √2 < 2 (두 점), k = 2√2일 때 d = 2 (접함), k = 4일 때 d = 2√2 > 2 (만나지 않음)을 확인합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "판별식 D와의 일치성 확인",
+          "instruction": "x² + (x + k)² = 4 에 대입하여 2x² + 2kx + k² - 4 = 0의 판별식 D/4 = k² - 2(k² - 4) = 8 - k² 의 부호와 일치함을 논증합니다."
+        }
+      ],
+      "evaluationCriteria": "대수적 방법(판별식)보다 기하학적 방법(점과 직선 사이 거리)이 계산상 월등히 빠르고 직관적임을 설명할 수 있는가?",
+      "realWorldApplication": "자율주행 차량의 라이다(LiDAR) 센서가 보행자 보호구역(원형 안전마진)과 차량 이동 경로(직선 궤적)의 충돌 가능성을 실시간 판정할 때 쓰입니다."
+    },
+    {
+      "id": "circle-act-06",
+      "title": "원의 접선의 방정식 3대 마스터 활동 (원 위의 점, 기울기, 원 밖의 점)",
+      "category": "line-circle",
+      "categoryName": "위치관계 & 접선",
+      "difficulty": "심화",
+      "equationType": "접선의 방정식 (Tangent Equation)",
+      "equationFormula": "\\text{위의 점: } x_1 x + y_1 y = r^2 \\quad | \\quad \\text{기울기 } m: y = mx \\pm r\\sqrt{m^2 + 1}",
+      "targetGrade": "고등학교 1학년",
+      "competency": ["문제해결", "공식 유도", "수직 조건"],
+      "keywords": ["접선의 방정식", "접점", "기울기 공식", "극선", "접선의 길이"],
+      "conceptSummary": "원 x² + y² = r²에 대하여 (1) 원 위의 접점 P(x₁, y₁)에서의 접선은 x₁x + y₁y = r² (반지름과 접선의 수직성 이용), (2) 기울기가 m인 접선은 y = mx ± r√(m²+1), (3) 원 밖의 한 점에서는 항상 2개의 접선이 존재하며 중심과 직선 사이 거리가 r임을 연립하여 구합니다.",
+      "parameters": {
+        "radius": 5,
+        "contactPoint": { "x": 3, "y": 4 },
+        "givenSlope": 2,
+        "externalPoint": { "x": 7, "y": 1 }
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "원 위의 점 접선 공식 유도",
+          "instruction": "중심 (0,0)과 접점 P(3, 4)를 잇는 법선의 기울기 4/3에 수직인 직선 기울기가 -3/4임을 이용하여 3x + 4y = 25를 유도합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "기울기가 주어진 평행 접선쌍",
+          "instruction": "기울기 m = 2인 두 접선 y = 2x ± 5√(2²+1) = 2x ± 5√5 의 평행선 궤적을 관찰합니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "원 밖의 점에서 그은 두 접선",
+          "instruction": "원 밖의 점 (7, 1)을 지나는 직선 y - 1 = m(x - 7)과 중심 사이 거리가 5임을 이용하여 두 접선의 기울기를 산출합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "접선의 길이 계산",
+          "instruction": "피타고라스 정리를 활용하여 원 밖의 점에서 접점까지의 접선의 길이 √(d² - r²)을 기하학적으로 검증합니다."
+        }
+      ],
+      "evaluationCriteria": "원 밖의 점에서 접선을 구할 때 기울기가 정의되지 않는 수직선(x = k) 형태의 해가 누락되지 않도록 그래프와 함께 꼼꼼히 판별할 수 있는가?",
+      "realWorldApplication": "인공위성이 지구(구/원) 지평선 너머로 신호를 송출할 수 있는 가시선(Line of Sight) 한계선 접선 계산에 필수적입니다."
+    },
+    {
+      "id": "circle-act-07",
+      "title": "지진 진앙지 삼각측량 (Seismic Triangulation) 실생활 융합 프로젝트",
+      "category": "real-world",
+      "categoryName": "실생활 융합 모델링",
+      "difficulty": "심화",
+      "equationType": "실생활 연립 원 방정식 (Intersection of Three Circles)",
+      "equationFormula": "(x - x_i)^2 + (y - y_i)^2 = r_i^2 \\quad (i = 1, 2, 3)",
+      "targetGrade": "고등학교 1~2학년",
+      "competency": ["창의·융합", "문제해결", "실생활 모델링", "정보활용"],
+      "keywords": ["지진 진앙지", "P파와 S파", "PS시", "삼각측량", "세 원의 교점", "GPS"],
+      "conceptSummary": "세 지진 관측소 A, B, C에서 지진파의 P파와 S파 도달 시간 차이(PS시)를 측정하면 각 관측소에서 진앙까지의 거리 r₁, r₂, r₃를 계산할 수 있습니다. 각 관측소를 중심으로 하고 진앙 거리를 반지름으로 하는 3개의 원의 방정식을 세우면, 세 원이 단 하나의 공통 교점에서 만나며 그 좌표가 바로 지진의 진앙지(Epicenter)가 됩니다.",
+      "parameters": {
+        "stationA": { "name": "서울 관측소", "x": 0, "y": 6, "radius": 5, "equation": "x² + (y-6)² = 25" },
+        "stationB": { "name": "대전 관측소", "x": -4, "y": 0, "radius": 5, "equation": "(x+4)² + y² = 25" },
+        "stationC": { "name": "강릉 관측소", "x": 4, "y": 0, "radius": 5, "equation": "(x-4)² + y² = 25" },
+        "epicenter": { "x": 0, "y": 3, "description": "세 원의 단일 공통 교점 (진앙 좌표)" }
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "PS시를 통한 거리 산출",
+          "instruction": "v_p = 8km/s, v_s = 4km/s 일 때 PS시로부터 세 관측소 A(0, 6), B(-4, 0), C(4, 0)에서 진앙까지의 거리가 모두 5km임을 도출합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "세 관측소의 원 방정식 수립",
+          "instruction": "① x² + (y-6)² = 25, ② (x+4)² + y² = 25, ③ (x-4)² + y² = 25 의 세 원의 방정식을 연립 형태로 기술합니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "공통현의 교점(근축) 연립 소거",
+          "instruction": "②식에서 ③식을 빼서 16x = 0 → x = 0 을 얻고, 이를 ①식과 ②식에 대입하여 공통해 y = 3을 찾아냅니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "진앙지 좌표 확정 및 오차 범위 논의",
+          "instruction": "진앙의 좌표가 (0, 3)임을 확정하고, 관측 오차가 발생했을 때 3개의 원이 삼각형 오차 영역을 형성하는 실제 지진학적 보정 기법을 토의합니다."
+        }
+      ],
+      "evaluationCriteria": "지진파 물리학적 원리와 원의 방정식을 융합하여 세 원의 연립 시스템을 성공적으로 수립하고 근축의 연립을 통해 진앙 좌표를 오차 없이 추론하는가?",
+      "realWorldApplication": "기상청 지진 조기 경보 시스템(KMA Earthquake Early Warning) 및 스마트폰 GPS 위성 4개 연립 삼각측량의 핵심 수학 모델입니다."
+    },
+    {
+      "id": "circle-act-08",
+      "title": "스마트 시티 5G 기지국 및 응급 드론 배송 반경 최적화 모델링",
+      "category": "real-world",
+      "categoryName": "실생활 융합 모델링",
+      "difficulty": "발전",
+      "equationType": "최적 커버리지 원 (Coverage Optimization)",
+      "equationFormula": "(x - x_k)^2 + (y - y_k)^2 \\le R^2 \\quad \\min \\sum R_k^2",
+      "targetGrade": "고등학교 1~2학년",
+      "competency": ["창의·융합", "의사결정", "최적화", "문제해결"],
+      "keywords": ["기지국", "커버리지", "드론 배송", "음영지역 최소화", "원의 부등식", "반경 최적화"],
+      "conceptSummary": "도심 내 중요한 4개 거점 A(1, 2), B(5, 2), C(5, 6), D(1, 6)을 포함하는 영역에 전파 음영 지역이 없도록 통신 기지국을 설치하고자 합니다. 기지국의 전파 도달 범위는 원의 내부 (x-a)² + (y-b)² ≤ r²로 표현되므로, 설치 비용을 최소화(반지름 r의 최소화)하는 중심 좌표와 반경을 수학적으로 모델링합니다.",
+      "parameters": {
+        "cityCenter": { "x": 3, "y": 4 },
+        "optimalRadius": 2.828,
+        "coveredPoints": [[1, 2], [5, 2], [5, 6], [1, 6]],
+        "minRadiusSquared": 8
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "수요처 좌표 설정",
+          "instruction": "가로 4km, 세로 4km의 정사각형 구역의 꼭짓점에 위치한 4개 마을의 좌표를 설정합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "외접원의 중심과 반지름 결정",
+          "instruction": "네 점을 모두 포괄하는 최소 원은 정사각형의 대각선 교점인 (3, 4)를 중심으로 하고 대각선 길이의 절반인 r = 2√2 ≈ 2.83km 임을 도출합니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "2개 기지국 분할 모델 비교",
+          "instruction": "반경이 작은 기지국 2개를 배치할 때 (x-2)²+(y-4)² ≤ r₁² 과 (x-4)²+(y-4)² ≤ r₂² 의 중첩 면적과 전력 소모량을 비교합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "원의 부등식 시뮬레이션",
+          "instruction": "경계선 상의 접속 신호 세기 dBm과 거리의 반비례 관계를 원의 방정식과 결합하여 평가합니다."
+        }
+      ],
+      "evaluationCriteria": "현실의 공간적 제약 조건을 원의 부등식 모델로 추상화하고, 최적화 기준에 맞춰 수학적 논거를 들어 합리적인 대안을 제시할 수 있는가?",
+      "realWorldApplication": "도심 항공 모빌리티(UAM) 버티포트 입지 선정 및 통신사 통신 기지국 셀 플래닝(Cell Planning) 설계에 활용됩니다."
+    },
+    {
+      "id": "circle-act-09",
+      "title": "아폴로니오스의 원 (Apollonian Circle): 거리의 비가 일정한 점의 신비한 자취",
+      "category": "locus-family",
+      "categoryName": "심화 자취 & 원의 족",
+      "difficulty": "심화",
+      "equationType": "자취의 방정식 (Locus Equation)",
+      "equationFormula": "\\frac{\\overline{PA}}{\\overline{PB}} = \\frac{m}{n} \\quad (m \\ne n) \\implies \\text{내분점과 외분점을 지름의 양 끝으로 하는 원}",
+      "targetGrade": "고등학교 1학년",
+      "competency": ["수학적 추론", "기하학적 통찰", "자취 방정식 유도"],
+      "keywords": ["아폴로니오스", "자취", "거리의 비", "내분점", "외분점", "각의 이등분선"],
+      "conceptSummary": "두 정점 A, B에 대하여 거리의 비 PA : PB = m : n (m > 0, n > 0, m ≠ n)을 만족하는 점 P(x, y)의 자취는 선분 AB를 m : n으로 내분하는 점과 외분하는 점을 지름의 양 끝점으로 하는 원이 됩니다. (m = n인 경우에만 수직이등분선 직선이 됨)",
+      "parameters": {
+        "pointA": { "x": -3, "y": 0 },
+        "pointB": { "x": 3, "y": 0 },
+        "ratioM": 2,
+        "ratioN": 1,
+        "internalPoint": { "x": 1, "y": 0 },
+        "externalPoint": { "x": 9, "y": 0 },
+        "circleCenter": { "x": 5, "y": 0 },
+        "radius": 4,
+        "equation": "(x - 5)^2 + y^2 = 16"
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "자취의 대수적 방정식 수립",
+          "instruction": "P(x, y)에 대해 √((x+3)²+y²) : √((x-3)²+y²) = 2 : 1 식을 세우고 내항·외항 곱의 제곱식을 전개합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "이차식 정리 및 원 확인",
+          "instruction": "(x+3)² + y² = 4((x-3)² + y²) 식을 전개 정리하여 3x² + 3y² - 30x + 27 = 0 → (x-5)² + y² = 16 을 도출합니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "내분점과 외분점 기하 검증",
+          "instruction": "선분 AB를 2:1로 내분하는 점 ((2·3+1·(-3))/3, 0) = (1, 0)과 외분하는 점 ((2·3-1·(-3))/1, 0) = (9, 0)의 중점이 바로 중심 (5, 0)이고 거리가 지름 8임을 확인합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "삼각형의 각의 이등분선 정리와의 연결",
+          "instruction": "점 P와 점 A, B가 이루는 삼각형 PAB에서 내각의 이등분선과 외각의 이등분선이 항상 수직(90도)을 이룬다는 기하학적 성질과 원주각 90도 정리를 결합합니다."
+        }
+      ],
+      "evaluationCriteria": "대수적 자취 방정식 유도와 유클리드 기하의 내분점/외분점 지름 성질을 완벽히 상호 연결하여 입체적으로 증명할 수 있는가?",
+      "realWorldApplication": "음향 음원 위치 추적에서 두 마이크에 도달한 소리 진폭 비를 기반으로 음원 발생원의 가능한 원형 궤적을 산출할 때 활용됩니다."
+    },
+    {
+      "id": "circle-act-10",
+      "title": "두 원의 공통현(근축)과 원의 족(Family of Circles) 항등식 탐구",
+      "category": "locus-family",
+      "categoryName": "심화 자취 & 원의 족",
+      "difficulty": "심화",
+      "equationType": "원의 족 (Family of Circles & Radical Axis)",
+      "equationFormula": "(x^2+y^2+Ax+By+C) + k(x^2+y^2+A'x+B'y+C') = 0 \\quad (k = -1 \\implies \\text{공통현})",
+      "targetGrade": "고등학교 1학년",
+      "competency": ["항등식의 성질", "방정식의 족", "수학적 엄밀성"],
+      "keywords": ["두 원의 교점", "공통현의 방정식", "근축", "원의 족", "항등식 k", "공통접선"],
+      "conceptSummary": "서로 다른 두 원 C₁: f(x, y) = 0 과 C₂: g(x, y) = 0의 교점을 지나는 모든 도형의 방정식은 항등식 f(x, y) + k g(x, y) = 0 (단, k ≠ -1 이면 원, k = -1 이면 두 원의 교점을 지나는 직선인 '공통현의 방정식')으로 표현됩니다.",
+      "parameters": {
+        "circle1": "x² + y² - 4 = 0",
+        "circle2": "x² + y² - 4x - 4y + 4 = 0",
+        "commonChord": "x + y = 2",
+        "sampleK": 1,
+        "sampleNewCircle": "2x² + 2y² - 4x - 4y = 0"
+      },
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "두 원의 교점 연립 구조 이해",
+          "instruction": "f(x, y)=0과 g(x, y)=0을 동시에 만족하는 교점 (x₀, y₀)은 k의 값에 관계없이 항상 f+kg=0을 만족함을 항등식 원리로 확인합니다."
+        },
+        {
+          "stepNumber": 2,
+          "title": "k = -1 일 때의 공통현 방정식",
+          "instruction": "(x²+y²-4) - (x²+y²-4x-4y+4) = 0 에서 이차항 x², y²이 완벽히 소거되어 일차방정식 4x + 4y - 8 = 0 → x + y = 2 가 됨을 유도합니다."
+        },
+        {
+          "stepNumber": 3,
+          "title": "두 원의 교점과 추가 한 점을 지나는 새로운 원",
+          "instruction": "두 원의 교점과 원점 (0, 0)을 지나는 원의 방정식을 구하기 위해 (0,0)을 대입하여 k = 1을 확정하고 표준형으로 변형합니다."
+        },
+        {
+          "stepNumber": 4,
+          "title": "공통현의 길이 계산 기하 테크닉",
+          "instruction": "원의 중심과 공통현 사이의 거리 d와 반지름 r을 이용하여 직각삼각형 피타고라스 정리로 공통현의 길이 2√(r²-d²)를 손쉽게 구하는 방법을 마스터합니다."
+        }
+      ],
+      "evaluationCriteria": "두 원의 교점을 직접 구하지 않고도 항등식 k를 도입하여 연립 도형의 방정식을 유도하는 수학적 간결성과 강력함을 설명할 수 있는가?",
+      "realWorldApplication": "천문학에서 두 행성/위성의 중력 등전위면 교선 분석 및 레이더 간섭 무늬(Interferometry) 해석에 쓰입니다."
+    }
+  ]
+}

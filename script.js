@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavigationAndSearch();
   initCategoryFilters();
   initSimulationModal();
+  initCircleActivitiesDB();
 });
 
 // 1. Background Math Particle & Graph Animation
@@ -973,4 +974,512 @@ function initSimulationModal() {
       closeModal();
     }
   });
+}
+
+// ==========================================
+// 7. Circle Equation Activities Database Module
+// ==========================================
+function initCircleActivitiesDB() {
+  const gridContainer = document.getElementById('circle-activities-grid');
+  if (!gridContainer) return;
+
+  const searchInput = document.getElementById('circle-act-search');
+  const difficultyFilter = document.getElementById('circle-act-difficulty-filter');
+  const categoryPills = document.querySelectorAll('.circle-cat-pill');
+  const emptyMessage = document.getElementById('circle-activities-empty');
+  const statTotal = document.getElementById('stat-total-activities');
+  const downloadBtn = document.getElementById('btn-download-db-json');
+  const openAddBtn = document.getElementById('btn-open-add-activity');
+  const navQuickAddBtn = document.getElementById('nav-quick-add-btn');
+  const resetFiltersBtn = document.getElementById('btn-reset-filters');
+
+  // Modals
+  const detailModal = document.getElementById('activity-detail-modal');
+  const detailCloseBtn = document.getElementById('act-modal-close-btn');
+  const addModal = document.getElementById('add-activity-modal');
+  const addCloseBtn = document.getElementById('add-modal-close-btn');
+  const addForm = document.getElementById('add-activity-form');
+
+  // Detail Modal Elements
+  const detailTitle = document.getElementById('act-modal-title');
+  const detailCat = document.getElementById('act-modal-category');
+  const detailDiff = document.getElementById('act-modal-difficulty');
+  const detailGrade = document.getElementById('act-modal-grade');
+  const detailEqType = document.getElementById('act-modal-eqtype');
+  const detailFormula = document.getElementById('act-modal-formula');
+  const detailCompetencies = document.getElementById('act-modal-competencies');
+  const detailConcept = document.getElementById('act-modal-concept');
+  const detailSteps = document.getElementById('act-modal-steps');
+  const detailParams = document.getElementById('act-modal-params');
+  const detailRealWorld = document.getElementById('act-modal-realworld');
+  const detailEval = document.getElementById('act-modal-eval');
+  const detailCopyBtn = document.getElementById('act-modal-copy-btn');
+  const detailLaunchBtn = document.getElementById('act-modal-launch-sim-btn');
+
+  let currentSelectedActivity = null;
+
+  // 1. Data Store Initialization (Global DB + LocalStorage custom activities)
+  const defaultActivities = (window.CIRCLE_ACTIVITIES_DB && window.CIRCLE_ACTIVITIES_DB.activities) ? window.CIRCLE_ACTIVITIES_DB.activities : [];
+
+  function getCustomActivities() {
+    try {
+      const stored = localStorage.getItem('mathverse_circle_activities_custom');
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      console.warn('LocalStorage access warning:', e);
+      return [];
+    }
+  }
+
+  function saveCustomActivities(customList) {
+    try {
+      localStorage.setItem('mathverse_circle_activities_custom', JSON.stringify(customList));
+    } catch (e) {
+      console.error('LocalStorage save error:', e);
+    }
+  }
+
+  function getAllActivities() {
+    return [...defaultActivities, ...getCustomActivities()];
+  }
+
+  // Filter State
+  const filterState = {
+    keyword: '',
+    category: 'all',
+    difficulty: 'all'
+  };
+
+  // Badge Color Helper
+  const categoryColorMap = {
+    'standard-general': { bg: 'bg-indigo-500/20', text: 'text-indigo-300', border: 'border-indigo-500/30', accent: '#6366f1' },
+    'axis-tangent': { bg: 'bg-cyan-500/20', text: 'text-cyan-300', border: 'border-cyan-500/30', accent: '#06b6d4' },
+    'line-circle': { bg: 'bg-rose-500/20', text: 'text-rose-300', border: 'border-rose-500/30', accent: '#f43f5e' },
+    'real-world': { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30', accent: '#10b981' },
+    'locus-family': { bg: 'bg-amber-500/20', text: 'text-amber-300', border: 'border-amber-500/30', accent: '#f59e0b' }
+  };
+
+  const difficultyColorMap = {
+    '기본': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    '발전': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    '심화': 'bg-pink-500/20 text-pink-300 border-pink-500/30'
+  };
+
+  // 2. Render Activity Cards
+  function renderActivities() {
+    const all = getAllActivities();
+    if (statTotal) statTotal.textContent = all.length;
+    const catAllCount = document.getElementById('cat-count-all');
+    if (catAllCount) catAllCount.textContent = all.length;
+
+    const filtered = all.filter((act) => {
+      // Category filter
+      if (filterState.category !== 'all' && act.category !== filterState.category) {
+        return false;
+      }
+      // Difficulty filter
+      if (filterState.difficulty !== 'all' && act.difficulty !== filterState.difficulty) {
+        return false;
+      }
+      // Keyword filter (title, formula, keywords, concept)
+      if (filterState.keyword.trim() !== '') {
+        const q = filterState.keyword.toLowerCase();
+        const titleMatch = (act.title || '').toLowerCase().includes(q);
+        const formulaMatch = (act.equationFormula || '').toLowerCase().includes(q);
+        const typeMatch = (act.equationType || '').toLowerCase().includes(q);
+        const conceptMatch = (act.conceptSummary || '').toLowerCase().includes(q);
+        const kwMatch = Array.isArray(act.keywords) && act.keywords.some(k => k.toLowerCase().includes(q));
+        if (!titleMatch && !formulaMatch && !typeMatch && !conceptMatch && !kwMatch) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      gridContainer.innerHTML = '';
+      if (emptyMessage) emptyMessage.classList.remove('hidden');
+      return;
+    }
+
+    if (emptyMessage) emptyMessage.classList.add('hidden');
+
+    gridContainer.innerHTML = filtered.map((act, index) => {
+      const colors = categoryColorMap[act.category] || { bg: 'bg-white/10', text: 'text-slate-300', border: 'border-white/20', accent: '#a855f7' };
+      const diffClass = difficultyColorMap[act.difficulty] || 'bg-white/10 text-slate-300 border-white/20';
+      const cleanFormula = (act.equationFormula || '').replace(/\\\\quad/g, ' | ').replace(/\\\\/g, '');
+      const keywordsHtml = Array.isArray(act.keywords) 
+        ? act.keywords.slice(0, 3).map(k => `<span class="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.04] text-slate-400 border border-white/5">#${k}</span>`).join('') 
+        : '';
+      const isCustom = act.id && act.id.startsWith('circle-custom-');
+
+      return `
+        <article class="glass-card simulation-card flex flex-col justify-between border-white/10 hover:border-amber-400/40 transition-all duration-300 group" data-act-id="${act.id}">
+          <div class="p-6 space-y-4">
+            
+            <!-- Top Badges -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full ${colors.bg} ${colors.text} border ${colors.border}">
+                  ${act.categoryName || act.category}
+                </span>
+                <span class="text-[10px] font-medium px-2 py-0.5 rounded-full border ${diffClass}">
+                  ${act.difficulty || '발전'}
+                </span>
+              </div>
+              <span class="text-[11px] font-mono text-slate-500 font-semibold">
+                #${String(index + 1).padStart(2, '0')} ${isCustom ? '<span class="text-pink-400 text-[10px]">[사용자등록]</span>' : ''}
+              </span>
+            </div>
+
+            <!-- Title -->
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-white group-hover:text-amber-300 transition-colors leading-snug line-clamp-2">
+                ${act.title}
+              </h3>
+              <p class="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+                ${act.conceptSummary || ''}
+              </p>
+            </div>
+
+            <!-- Formula Highlight Box -->
+            <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-cyan-300 overflow-x-auto select-all">
+              ${cleanFormula || '(x - a)² + (y - b)² = r²'}
+            </div>
+
+            <!-- Keywords Tag Cloud -->
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${keywordsHtml}
+            </div>
+
+          </div>
+
+          <!-- Card Bottom Action Toolbar -->
+          <div class="p-4 pt-3 border-t border-white/10 flex items-center justify-between bg-white/[0.01]">
+            <span class="text-[11px] text-slate-400 font-mono">
+              ${act.equationType || '표준형'}
+            </span>
+            <div class="flex items-center gap-2">
+              <button class="glass-btn glass-btn-primary text-xs py-1.5 px-3.5 flex items-center gap-1.5 btn-open-act-detail" data-act-id="${act.id}">
+                <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+                <span>탐구하기</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+
+    // Attach click handlers to cards
+    const openButtons = gridContainer.querySelectorAll('.btn-open-act-detail');
+    openButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = btn.getAttribute('data-act-id');
+        const activity = all.find(a => a.id === id);
+        if (activity) openActivityDetail(activity);
+      });
+    });
+  }
+
+  // 3. Open Activity Detail Modal
+  function openActivityDetail(activity) {
+    currentSelectedActivity = activity;
+    if (!detailModal) return;
+
+    if (detailTitle) detailTitle.textContent = activity.title;
+    if (detailCat) detailCat.textContent = activity.categoryName || activity.category;
+    if (detailDiff) detailDiff.textContent = activity.difficulty;
+    if (detailGrade) detailGrade.textContent = activity.targetGrade || '고등학교 공통수학1';
+    if (detailEqType) detailEqType.textContent = activity.equationType || '표준형 방정식';
+    if (detailFormula) detailFormula.textContent = activity.equationFormula;
+    if (detailConcept) detailConcept.textContent = activity.conceptSummary;
+
+    // Competencies
+    if (detailCompetencies) {
+      if (Array.isArray(activity.competency) && activity.competency.length > 0) {
+        detailCompetencies.innerHTML = activity.competency.map(c => `
+          <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-400/20 flex items-center gap-1">
+            <i data-lucide="award" class="w-3 h-3 text-indigo-400"></i> ${c}
+          </span>
+        `).join('');
+      } else {
+        detailCompetencies.innerHTML = '';
+      }
+    }
+
+    // Steps
+    if (detailSteps) {
+      if (Array.isArray(activity.steps) && activity.steps.length > 0) {
+        detailSteps.innerHTML = activity.steps.map(s => `
+          <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3">
+            <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-300 font-bold text-xs flex items-center justify-center shrink-0 border border-cyan-400/30">
+              ${s.stepNumber || '•'}
+            </span>
+            <div>
+              <div class="text-xs font-bold text-slate-200">${s.title || ''}</div>
+              <p class="text-xs text-slate-300 mt-0.5 leading-relaxed">${s.instruction || ''}</p>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        detailSteps.innerHTML = '<p class="text-xs text-slate-400">등록된 탐구 단계 가이드가 없습니다.</p>';
+      }
+    }
+
+    // Parameters
+    if (detailParams) {
+      if (activity.parameters) {
+        detailParams.innerHTML = Object.entries(activity.parameters).map(([k, v]) => {
+          const valStr = typeof v === 'object' ? JSON.stringify(v) : v;
+          return `<div><span class="text-cyan-400">${k}</span>: <span class="text-slate-200">${valStr}</span></div>`;
+        }).join('');
+      } else {
+        detailParams.textContent = '기본 중심 (0, 0), 반지름 r = 3';
+      }
+    }
+
+    // Real World
+    if (detailRealWorld) {
+      detailRealWorld.textContent = activity.realWorldApplication || '해석기하학 및 궤적 모델링';
+    }
+
+    // Evaluation
+    if (detailEval) {
+      detailEval.textContent = activity.evaluationCriteria || '원의 기하학적 정의를 명확히 이해하고 방정식을 능숙하게 표현할 수 있는가?';
+    }
+
+    detailModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function closeDetailModal() {
+    if (!detailModal) return;
+    detailModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (detailCloseBtn) detailCloseBtn.addEventListener('click', closeDetailModal);
+  if (detailModal) {
+    detailModal.addEventListener('click', (e) => {
+      if (e.target === detailModal) closeDetailModal();
+    });
+  }
+
+  // Copy Activity to Clipboard
+  if (detailCopyBtn) {
+    detailCopyBtn.addEventListener('click', () => {
+      if (!currentSelectedActivity) return;
+      const act = currentSelectedActivity;
+      const text = `[원의 방정식 탐구 활동지: ${act.title}]\n\n- 카테고리: ${act.categoryName || act.category}\n- 난이도: ${act.difficulty}\n- 방정식 공식: ${act.equationFormula}\n\n[수학적 개념]\n${act.conceptSummary}\n\n[단계별 탐구 미션]\n${(act.steps || []).map(s => `${s.stepNumber}. ${s.title}: ${s.instruction}`).join('\n')}\n\n[실생활 융합]\n${act.realWorldApplication || 'N/A'}`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = detailCopyBtn.innerHTML;
+        detailCopyBtn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i><span class="text-emerald-300">복사 완료!</span>`;
+        if (window.lucide) window.lucide.createIcons();
+        setTimeout(() => {
+          detailCopyBtn.innerHTML = originalText;
+          if (window.lucide) window.lucide.createIcons();
+        }, 2000);
+      }).catch(err => {
+        alert('클립보드 복사에 실패했습니다.');
+      });
+    });
+  }
+
+  // Launch Simulator with Activity Params
+  if (detailLaunchBtn) {
+    detailLaunchBtn.addEventListener('click', () => {
+      closeDetailModal();
+      
+      // Scroll to Hero Sandbox
+      const sandbox = document.getElementById('interactive-sandbox');
+      if (sandbox) {
+        sandbox.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      // Activate Circle mode in Hero sandbox
+      const circleBtn = document.querySelector('[data-sim-type="circle"]');
+      if (circleBtn) {
+        circleBtn.click();
+      }
+
+      // Adjust amplitude slider to match radius if possible
+      if (currentSelectedActivity && currentSelectedActivity.parameters && currentSelectedActivity.parameters.radius) {
+        const rVal = parseFloat(currentSelectedActivity.parameters.radius);
+        const ampSlider = document.getElementById('slider-amp');
+        const ampLabel = document.getElementById('label-amp');
+        if (ampSlider && !isNaN(rVal)) {
+          const targetAmp = Math.max(0.5, Math.min(3.0, (rVal / 1.5)));
+          ampSlider.value = targetAmp;
+          if (ampLabel) ampLabel.textContent = targetAmp.toFixed(1);
+          ampSlider.dispatchEvent(new Event('input'));
+        }
+      }
+    });
+  }
+
+  // 4. Search and Filters
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      filterState.keyword = e.target.value;
+      renderActivities();
+    });
+  }
+
+  if (difficultyFilter) {
+    difficultyFilter.addEventListener('change', (e) => {
+      filterState.difficulty = e.target.value;
+      renderActivities();
+    });
+  }
+
+  categoryPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      categoryPills.forEach(p => p.classList.remove('active', 'bg-indigo-600/30', 'border-indigo-400/50', 'text-white'));
+      pill.classList.add('active', 'bg-indigo-600/30', 'border-indigo-400/50', 'text-white');
+      filterState.category = pill.getAttribute('data-act-cat');
+      renderActivities();
+    });
+  });
+
+  if (resetFiltersBtn) {
+    resetFiltersBtn.addEventListener('click', () => {
+      filterState.keyword = '';
+      filterState.category = 'all';
+      filterState.difficulty = 'all';
+      if (searchInput) searchInput.value = '';
+      if (difficultyFilter) difficultyFilter.value = 'all';
+      categoryPills.forEach(p => {
+        if (p.getAttribute('data-act-cat') === 'all') {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+      renderActivities();
+    });
+  }
+
+  // 5. Download Full DB as JSON
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      const exportData = {
+        databaseInfo: {
+          title: "원의 방정식 표현 및 탐구 활동 데이터베이스 (Circle Equation Activities DB)",
+          version: "1.0.0",
+          curriculum: "2022 개정 수학과 교육과정 (공통수학1 / 해석기하 / 도형의 방정식)",
+          exportedAt: new Date().toISOString(),
+          totalActivities: getAllActivities().length
+        },
+        activities: getAllActivities()
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "circle_activities_db_export.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
+  }
+
+  // 6. Add Custom Activity Modal
+  function openAddModal() {
+    if (!addModal) return;
+    addModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeAddModal() {
+    if (!addModal) return;
+    addModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (openAddBtn) openAddBtn.addEventListener('click', openAddModal);
+  if (navQuickAddBtn) navQuickAddBtn.addEventListener('click', openAddModal);
+  if (addCloseBtn) addCloseBtn.addEventListener('click', closeAddModal);
+  if (addModal) {
+    addModal.addEventListener('click', (e) => {
+      if (e.target === addModal) closeAddModal();
+    });
+  }
+
+  if (addForm) {
+    addForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('custom-act-title').value.trim();
+      const category = document.getElementById('custom-act-cat').value;
+      const difficulty = document.getElementById('custom-act-diff').value;
+      const equationType = document.getElementById('custom-act-type').value.trim();
+      const equationFormula = document.getElementById('custom-act-formula').value.trim();
+      const conceptSummary = document.getElementById('custom-act-concept').value.trim();
+      const rawSteps = document.getElementById('custom-act-steps').value.trim();
+      const realWorldApplication = document.getElementById('custom-act-realworld').value.trim();
+      const keywordsRaw = document.getElementById('custom-act-keywords').value.trim();
+
+      const catNameMap = {
+        'standard-general': '표준형 & 일반형',
+        'axis-tangent': '좌표축 접촉',
+        'line-circle': '위치관계 & 접선',
+        'real-world': '실생활 융합 모델링',
+        'locus-family': '심화 자취 & 원의 족'
+      };
+
+      const stepsList = rawSteps.split('\n').filter(line => line.trim() !== '').map((line, idx) => {
+        const parts = line.split(':');
+        return {
+          stepNumber: idx + 1,
+          title: parts.length > 1 ? parts[0].trim() : `탐구 단계 ${idx + 1}`,
+          instruction: parts.length > 1 ? parts.slice(1).join(':').trim() : line.trim()
+        };
+      });
+
+      const newActivity = {
+        id: `circle-custom-${Date.now()}`,
+        title,
+        category,
+        categoryName: catNameMap[category] || category,
+        difficulty,
+        equationType,
+        equationFormula,
+        targetGrade: '고등학교 1학년',
+        competency: ['문제해결', '개념이해', '기호표현'],
+        keywords: keywordsRaw ? keywordsRaw.split(',').map(k => k.trim()).filter(Boolean) : ['원의방정식'],
+        conceptSummary,
+        steps: stepsList,
+        realWorldApplication: realWorldApplication || '도형의 방정식 및 공학적 모델링',
+        evaluationCriteria: '원의 방정식을 명확히 수립하고 기하학적 의미를 추론할 수 있는가?'
+      };
+
+      const customList = getCustomActivities();
+      customList.push(newActivity);
+      saveCustomActivities(customList);
+
+      addForm.reset();
+      closeAddModal();
+      renderActivities();
+
+      alert(`'${title}' 활동이 데이터베이스에 성공적으로 저장되었습니다!`);
+    });
+  }
+
+  // Global ESC Modal Close
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (detailModal && detailModal.classList.contains('open')) closeDetailModal();
+      if (addModal && addModal.classList.contains('open')) closeAddModal();
+    }
+  });
+
+  // Initial Render
+  renderActivities();
 }
